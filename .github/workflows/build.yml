@@ -23,11 +23,14 @@ jobs:
       USE_CLANG_CL: "ON"
       # Install location for LLVM
       LLVM_INSTALL_DIR: "./build/install"
-    matrix:
-      build-type:
-        - Release
-        - Debug
       
+    strategy:
+      fail-fast: false
+      matrix:
+        build-type:
+          - Release
+          - Debug
+        
     steps:
       - name: Setup LLVM
         uses: ZhongRuoyu/setup-llvm@v0
