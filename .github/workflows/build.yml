@@ -69,7 +69,7 @@ jobs:
           # Set up compiler options if using clang-cl
           $cmakeArgs = @(
             "-G", "Ninja",
-            "-DCMAKE_BUILD_TYPE=$env:CMAKE_BUILD_TYPE",
+            "-DCMAKE_BUILD_TYPE=${{matrix.build-type}}",
             "-DLLVM_ENABLE_ASSERTIONS=$env:LLVM_ENABLE_ASSERTIONS",
             "-DLLVM_ENABLE_RUNTIMES=$env:LLVM_ENABLE_RUNTIMES",
             "-DLLVM_RUNTIME_TARGETS=$env:LLVM_RUNTIME_TARGETS",
