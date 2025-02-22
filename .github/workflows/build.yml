@@ -1,0 +1,125 @@
+name: Build LLVM on Windows
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      LLVM_ENABLE_ASSERTIONS: ON
+      # Comma- or semicolon-separated list of projects to build (e.g. "clang;lld;mlir")
+      LLVM_ENABLE_PROJECTS: "clang;lld;lldb;clang-tools-extra;bolt;mlir"
+      LLVM_ENABLE_RUNTIMES: "all"
+      LLVM_RUNTIME_TARGETS: "WebAssembly;X86;AArch64" #;ARM;AArch64"
+      LLVM_ENABLE_MODULES: "ON"
+      LLVM_ENABLE_PEDANTIC: "OFF"
+      # Any additional options to pass to CMake (e.g. "-DLLVM_TARGETS_TO_BUILD=X86;ARM")
+      LLVM_CMAKE_OPTIONS: ""
+      # LLVM version to build
+      LLVM_VERSION: "18"
+      # LLVM version for prebuilt binaries
+      LLVM_BUILDER_VERSION: "18"
+      # Use clang-cl as compiler (ON/OFF)
+      USE_CLANG_CL: "ON"
+      # Install location for LLVM
+      LLVM_INSTALL_DIR: "./build/install"
+    matrix:
+      build-type:
+        - Release
+        - Debug
+      
+    steps:
+      - name: Setup LLVM
+        uses: ZhongRuoyu/setup-llvm@v0
+        with:
+          llvm-version: ${{env.LLVM_BUILDER_VERSION}}
+
+      - name: Checkout llvm-project repository
+        uses: actions/checkout@v3
+        with:
+          repository: llvm/llvm-project
+          ref: main
+          fetch-depth: 1
+          submodules: false
+
+      - name: Install CMake and Ninja via Chocolatey
+        shell: pwsh
+        run: |
+          choco install cmake ninja -y --no-progress
+          # Optionally update if already installed:
+          choco upgrade cmake ninja -y --no-progress
+
+      - name: Create build directory
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path build -Force
+          # Create install directory
+          New-Item -ItemType Directory -Path $env:LLVM_INSTALL_DIR -Force
+
+      - name: Configure LLVM build with CMake
+        shell: pwsh
+        run: |
+          Push-Location build
+          
+          # Set up compiler options if using clang-cl
+          $cmakeArgs = @(
+            "-G", "Ninja",
+            "../llvm",
+            "-S", "llvm",
+            "-B", "build",
+            "-DCMAKE_BUILD_TYPE=$env:CMAKE_BUILD_TYPE",
+            "-DLLVM_ENABLE_ASSERTIONS=$env:LLVM_ENABLE_ASSERTIONS",
+            "-DLLVM_ENABLE_RUNTIMES=$env:LLVM_ENABLE_RUNTIMES",
+            "-DLLVM_RUNTIME_TARGETS=$env:LLVM_RUNTIME_TARGETS",
+            "-DLLVM_ENABLE_PROJECTS=$env:LLVM_ENABLE_PROJECTS"
+            "-DLLVM_ENABLE_MODULES=$env:LLVM_ENABLE_MODULES"
+            "-DLLVM_ENABLE_PEDANTIC=$env:LLVM_ENABLE_PEDANTIC"
+          )
+          
+          # Add clang-cl compiler options if enabled
+          if ($env:USE_CLANG_CL -eq "ON") {
+            $cmakeArgs += @(
+              "-DCMAKE_C_COMPILER=clang-cl",
+              "-DCMAKE_CXX_COMPILER=clang-cl",
+              "-DLLVM_ENABLE_LLD=ON"
+            )
+          }
+
+          # Add install location
+          $cmakeArgs += @(
+            "-DCMAKE_INSTALL_PREFIX=$env:LLVM_INSTALL_DIR"
+          )
+          
+          # Add any additional CMake options
+          if ($env:LLVM_CMAKE_OPTIONS) {
+            $cmakeArgs += $env:LLVM_CMAKE_OPTIONS.Split(';')
+          }
+          
+          # Display the command
+          Write-Host "Running: cmake $cmakeArgs"
+          
+          # Execute CMake configuration
+          & cmake $cmakeArgs
+          
+          Pop-Location
+
+      - name: Build LLVM with Ninja
+        shell: pwsh
+        run: |
+          Push-Location build
+          ninja -v
+          Pop-Location
+
+      - name: Create artifacts
+        shell: pwsh
+        run: |
+        
+          # Create archive of artifacts
+          Compress-Archive -Path $env:LLVM_INSTALL_DIR -DestinationPath llvm-build-${{matrix.build-type}}.zip -Force
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: llvm-build-${{matrix.build-type}}.zip
+          path: llvm-build-${{matrix.build-type}}.zip
+          overwrite: true
