@@ -36,6 +36,11 @@ jobs:
       #   with:
       #     llvm-version: ${{env.LLVM_BUILDER_VERSION}}
 
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
       - name: Checkout llvm-project repository
         uses: actions/checkout@v3
         with:
