@@ -22,7 +22,7 @@ jobs:
       # Use clang-cl as compiler (ON/OFF)
       USE_CLANG_CL: "ON"
       # Install location for LLVM
-      LLVM_INSTALL_DIR: "./build/install"
+      LLVM_INSTALL_DIR: "./install"
 
     strategy:
       fail-fast: false
@@ -56,8 +56,10 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path build -Force
+          Push-Location build
           # Create install directory
           New-Item -ItemType Directory -Path $env:LLVM_INSTALL_DIR -Force
+          Pop-Location
 
       - name: Configure LLVM build with CMake
         shell: pwsh
@@ -114,9 +116,8 @@ jobs:
       - name: Create artifacts
         shell: pwsh
         run: |
-        
           # Create archive of artifacts
-          Compress-Archive -Path $env:LLVM_INSTALL_DIR -DestinationPath llvm-build-${{matrix.build-type}}.zip -Force
+          Compress-Archive -Path build/$env:LLVM_INSTALL_DIR -DestinationPath llvm-build-${{matrix.build-type}}.zip -Force
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
