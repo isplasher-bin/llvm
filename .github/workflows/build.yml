@@ -32,18 +32,18 @@ jobs:
           - Debug
         
     steps:
-      - name: Setup LLVM
-        uses: ZhongRuoyu/setup-llvm@v0
-        with:
-          llvm-version: ${{env.LLVM_BUILDER_VERSION}}
-
-      # - name: Checkout llvm-project repository
-      #   uses: actions/checkout@v3
+      # - name: Setup LLVM
+      #   uses: ZhongRuoyu/setup-llvm@v0
       #   with:
-      #     repository: llvm/llvm-project
-      #     ref: ${{env.LLVM_REPO_REF}}
-      #     fetch-depth: 1
-      #     submodules: false
+      #     llvm-version: ${{env.LLVM_BUILDER_VERSION}}
+
+      - name: Checkout llvm-project repository
+        uses: actions/checkout@v3
+        with:
+          repository: llvm/llvm-project
+          ref: ${{env.LLVM_REPO_REF}}
+          fetch-depth: 1
+          submodules: false
 
       - name: Install CMake and Ninja via Chocolatey
         shell: pwsh
