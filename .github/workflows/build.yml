@@ -69,7 +69,6 @@ jobs:
           # Set up compiler options if using clang-cl
           $cmakeArgs = @(
             "-G", "Ninja",
-            "../",
             "-DCMAKE_BUILD_TYPE=$env:CMAKE_BUILD_TYPE",
             "-DLLVM_ENABLE_ASSERTIONS=$env:LLVM_ENABLE_ASSERTIONS",
             "-DLLVM_ENABLE_RUNTIMES=$env:LLVM_ENABLE_RUNTIMES",
@@ -102,7 +101,7 @@ jobs:
           Write-Host "Running: cmake $cmakeArgs"
           
           # Execute CMake configuration
-          & cmake $cmakeArgs
+          & cmake $cmakeArgs ../llvm
           
           Pop-Location
 
