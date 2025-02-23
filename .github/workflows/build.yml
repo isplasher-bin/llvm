@@ -10,7 +10,7 @@ jobs:
       # Comma- or semicolon-separated list of projects to build (e.g. "clang;lld;mlir")
       LLVM_ENABLE_PROJECTS: "clang;lld;clang-tools-extra"
       LLVM_ENABLE_RUNTIMES: "all"
-      LLVM_RUNTIME_TARGETS: "WebAssembly;X86;AArch64" #;ARM;AArch64"
+      LLVM_RUNTIME_TARGETS: "X86;AArch64" #;ARM;AArch64"
       LLVM_ENABLE_PEDANTIC: "OFF"
       # Any additional options to pass to CMake (e.g. "-DLLVM_TARGETS_TO_BUILD=X86;ARM")
       LLVM_CMAKE_OPTIONS: ""
