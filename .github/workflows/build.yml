@@ -80,7 +80,6 @@ jobs:
             "-DLLVM_ENABLE_PROJECTS=$env:LLVM_ENABLE_PROJECTS"
             "-DLLVM_ENABLE_MODULES=$env:LLVM_ENABLE_MODULES"
             "-DLLVM_ENABLE_PEDANTIC=$env:LLVM_ENABLE_PEDANTIC"
-            "-DLLVM_ENABLE_LLD=ON"
           )
           
           # Add clang-cl compiler options if enabled
